@@ -5,6 +5,20 @@ from app.models import User, db
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+@bp.route('/test', methods=['GET'])
+def test():
+    try:
+        return jsonify({
+            "message": "API is working!",
+            "status": "success"
+        })
+    except Exception as e:
+        print(f"Error in test endpoint: {str(e)}")
+        return jsonify({
+            "error": str(e),
+            "status": "error"
+        }), 500
+
 @bp.route('/register', methods=['POST'])
 def register():
     data = request.json

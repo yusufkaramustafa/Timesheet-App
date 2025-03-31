@@ -10,8 +10,13 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
 
-    # Enable CORS for all routes
-    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+    # Enable CORS for all routes with more permissive settings for development
+    CORS(app, 
+         resources={r"/*": {
+             "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization", "Accept"]
+         }})
 
     db.init_app(app)
     jwt.init_app(app)
