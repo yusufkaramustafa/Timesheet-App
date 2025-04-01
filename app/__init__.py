@@ -21,9 +21,10 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
     
-    from app.routes import auth_routes, employee_routes, admin_routes
+    from app.routes import auth_routes, employee_routes, admin_routes, timesheet_routes
     app.register_blueprint(auth_routes.bp)
     app.register_blueprint(employee_routes.bp)
     app.register_blueprint(admin_routes.bp)
+    app.register_blueprint(timesheet_routes.bp)
     
     return app
