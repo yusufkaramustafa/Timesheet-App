@@ -73,4 +73,67 @@ def get_timesheets():
         })
         
     except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@bp.route('/<int:timesheet_id>', methods=['PUT'])
+@jwt_required()
+def update_timesheet(timesheet_id):
+    try:
+        user_id = get_jwt_identity()['id']
+        timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=user_id).first()
+        
+        if not timesheet:
+            return jsonify({"error": "Timesheet not found or unauthorized"}), 404
+            
+        data = request.json
+        
+        # Validate project if provided
+        if 'project' in data and data['project'] not in PROJECT_OPTIONS:
+            return jsonify({"error": "Invalid project option"}), 400
+            
+        # Update fields if provided
+        if 'date' in data:
+            timesheet.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+        if 'project' in data:
+            timesheet.project = data['project']
+        if 'hours' in data:
+            timesheet.hours = float(data['hours'])
+        if 'description' in data:
+            timesheet.description = data['description']
+            
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Timesheet updated successfully",
+            "timesheet": {
+                "id": timesheet.id,
+                "date": timesheet.date.strftime('%Y-%m-%d'),
+                "project": timesheet.project,
+                "hours": timesheet.hours,
+                "description": timesheet.description,
+                "created_at": timesheet.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+@bp.route('/<int:timesheet_id>', methods=['DELETE'])
+@jwt_required()
+def delete_timesheet(timesheet_id):
+    try:
+        user_id = get_jwt_identity()['id']
+        timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=user_id).first()
+        
+        if not timesheet:
+            return jsonify({"error": "Timesheet not found or unauthorized"}), 404
+            
+        db.session.delete(timesheet)
+        db.session.commit()
+        
+        return jsonify({"message": "Timesheet deleted successfully"})
+        
+    except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 400 
