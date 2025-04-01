@@ -8,8 +8,9 @@ import {
   Paper,
   Alert,
   Link,
+  CircularProgress,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Login = () => {
     password: '',
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,7 +31,11 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+    
     try {
+      console.log('Attempting login with:', formData);
       const response = await fetch('/auth/login', {
         method: 'POST',
         headers: {
@@ -38,18 +44,30 @@ const Login = () => {
         body: JSON.stringify(formData),
       });
 
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Store the token in localStorage
+      if (!data.access_token) {
+        throw new Error('No access token received');
+      }
+
+      // Store the token and user data in localStorage
       localStorage.setItem('token', data.access_token);
-      // Redirect to dashboard
-      navigate('/dashboard');
+      localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('Token and user data stored, navigating to dashboard...');
+      
+      // Use window.location.href for a full page reload
+      window.location.href = '/dashboard';
     } catch (err) {
-      setError(err.message);
+      console.error('Login error:', err);
+      setError(err.message || 'An error occurred during login');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,6 +102,7 @@ const Login = () => {
               autoFocus
               value={formData.username}
               onChange={handleChange}
+              disabled={loading}
             />
             <TextField
               margin="normal"
@@ -96,17 +115,19 @@ const Login = () => {
               autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
+              disabled={loading}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
             >
-              Sign In
+              {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
             <Box sx={{ textAlign: 'center' }}>
-              <Link href="/register" variant="body2">
+              <Link component={RouterLink} to="/register" variant="body2">
                 Don't have an account? Sign up
               </Link>
             </Box>

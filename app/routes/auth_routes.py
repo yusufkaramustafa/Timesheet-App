@@ -30,10 +30,24 @@ def register():
 
 @bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    user = User.query.filter_by(username=data['username']).first()
-    if not user or not check_password_hash(user.password, data['password']):
-        return jsonify({"error": "Invalid credentials"}), 401
+    try:
+        data = request.json
+        if not data or 'username' not in data or 'password' not in data:
+            return jsonify({"error": "Missing username or password"}), 400
 
-    access_token = create_access_token(identity={'id': user.id, 'role': user.role})
-    return jsonify(access_token=access_token)
+        user = User.query.filter_by(username=data['username']).first()
+        if not user or not check_password_hash(user.password, data['password']):
+            return jsonify({"error": "Invalid credentials"}), 401
+
+        access_token = create_access_token(identity={'id': user.id, 'role': user.role})
+        return jsonify({
+            "access_token": access_token,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "role": user.role
+            }
+        })
+    except Exception as e:
+        print(f"Login error: {str(e)}")
+        return jsonify({"error": "An error occurred during login"}), 500

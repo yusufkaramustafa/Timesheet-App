@@ -3,6 +3,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import Dashboard from './components/dashboard/Dashboard';
 
 const theme = createTheme();
 
@@ -39,7 +40,7 @@ function App() {
             element={
               isAuthenticated ? (
                 <Layout>
-                  <h1>Dashboard (Coming Soon)</h1>
+                  <Dashboard />
                 </Layout>
               ) : (
                 <Navigate to="/login" replace />

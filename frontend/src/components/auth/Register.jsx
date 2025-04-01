@@ -13,7 +13,7 @@ import {
   MenuItem,
   Link,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const Register = () => {
       }
 
       // Registration successful, redirect to login
-      navigate('/login');
+      navigate('/login', { replace: true });
     } catch (err) {
       setError(err.message);
     }
@@ -123,7 +123,7 @@ const Register = () => {
               Sign Up
             </Button>
             <Box sx={{ textAlign: 'center' }}>
-              <Link href="/login" variant="body2">
+              <Link component={RouterLink} to="/login" variant="body2">
                 Already have an account? Sign in
               </Link>
             </Box>
