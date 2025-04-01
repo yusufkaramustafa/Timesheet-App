@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Layout from './components/layout/Layout';
 import Login from './components/auth/Login';
+import Register from './components/auth/Register';
 
 const theme = createTheme();
 
@@ -20,6 +21,16 @@ function App() {
                 <Navigate to="/dashboard" replace />
               ) : (
                 <Login />
+              )
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <Register />
               )
             }
           />

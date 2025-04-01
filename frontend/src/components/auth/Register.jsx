@@ -7,15 +7,20 @@ import {
   Container,
   Paper,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Link,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
+    role: 'employee', // Default role
   });
   const [error, setError] = useState('');
 
@@ -30,7 +35,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/auth/login', {
+      const response = await fetch('/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,13 +46,11 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || 'Registration failed');
       }
 
-      // Store the token in localStorage
-      localStorage.setItem('token', data.access_token);
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Registration successful, redirect to login
+      navigate('/login');
     } catch (err) {
       setError(err.message);
     }
@@ -65,7 +68,7 @@ const Login = () => {
       >
         <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
           <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Sign In
+            Sign Up
           </Typography>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -93,21 +96,35 @@ const Login = () => {
               label="Password"
               type="password"
               id="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
             />
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="role-label">Role</InputLabel>
+              <Select
+                labelId="role-label"
+                id="role"
+                name="role"
+                value={formData.role}
+                label="Role"
+                onChange={handleChange}
+              >
+                <MenuItem value="employee">Employee</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </Select>
+            </FormControl>
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              Sign Up
             </Button>
             <Box sx={{ textAlign: 'center' }}>
-              <Link href="/register" variant="body2">
-                Don't have an account? Sign up
+              <Link href="/login" variant="body2">
+                Already have an account? Sign in
               </Link>
             </Box>
           </Box>
@@ -117,4 +134,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Register; 
