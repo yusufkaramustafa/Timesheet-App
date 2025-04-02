@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Grid,
   Paper,
@@ -10,6 +11,12 @@ import {
 } from '@mui/material';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
+  const handleNewEntry = () => {
+    navigate('/timesheet', { state: { openForm: true } });
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={3}>
@@ -41,28 +48,11 @@ const Dashboard = () => {
                     cursor: 'pointer',
                     '&:hover': { bgcolor: 'action.hover' }
                   }}
-                  onClick={() => console.log('New Entry clicked')}
+                  onClick={handleNewEntry}
                 >
                   <Typography variant="h6">New Entry</Typography>
                   <Typography variant="body2" color="text.secondary">
                     Create new timesheet entry
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={2}
-                  sx={{
-                    p: 2,
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: 'action.hover' }
-                  }}
-                  onClick={() => console.log('View History clicked')}
-                >
-                  <Typography variant="h6">View History</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    View past entries
                   </Typography>
                 </Paper>
               </Grid>
