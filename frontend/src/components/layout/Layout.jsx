@@ -7,11 +7,14 @@ import {
   Button,
   Container,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Layout = ({ children }) => {
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem('token');
-    // TODO: Redirect to login
+    navigate('/login');
   };
 
   return (
@@ -22,15 +25,15 @@ const Layout = ({ children }) => {
             Timesheet App
           </Typography>
           <Button color="inherit" onClick={handleLogout}>
-            Logout
+            LOGOUT
           </Button>
         </Toolbar>
       </AppBar>
-      <Container sx={{ mt: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
         {children}
       </Container>
     </Box>
   );
 };
 
-export default Layout; 
+export default Layout;
