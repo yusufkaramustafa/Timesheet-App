@@ -15,17 +15,37 @@ import {
 } from '@mui/material';
 import { format } from 'date-fns';
 
-const TimesheetForm = ({ onSubmitSuccess }) => {
+const TimesheetForm = ({ onSubmitSuccess, initialData }) => {
   const [formData, setFormData] = useState({
     date: new Date(),
     project: '',
     hours: '',
     description: ''
   });
+  const [isEditing, setIsEditing] = useState(false);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        date: new Date(initialData.date),
+      });
+      setIsEditing(true);
+    } else {
+      setFormData({
+        date: new Date(),
+        project: '',
+        hours: '',
+        description: ''
+      });
+      setIsEditing(false);
+    }
+  }, [initialData]);
 
   // Fetch project options when component mounts
   useEffect(() => {
@@ -76,12 +96,13 @@ const TimesheetForm = ({ onSubmitSuccess }) => {
     
     try {
       const token = localStorage.getItem('token');
-      
-      // Format the date as YYYY-MM-DD
       const formattedDate = format(formData.date, 'yyyy-MM-dd');
       
-      const response = await fetch('/timesheet/', {
-        method: 'POST',
+      const url = isEditing ? `/timesheet/${initialData.id}` : '/timesheet/';
+      const method = isEditing ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -95,7 +116,7 @@ const TimesheetForm = ({ onSubmitSuccess }) => {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create timesheet entry');
+        throw new Error(data.error || `Failed to ${isEditing ? 'update' : 'create'} timesheet entry`);
       }
       
       // Clear form data
@@ -106,14 +127,15 @@ const TimesheetForm = ({ onSubmitSuccess }) => {
         description: ''
       });
       
-      setSuccess('Timesheet entry created successfully!');
+      setSuccess(`Timesheet entry ${isEditing ? 'updated' : 'created'} successfully!`);
+      setIsEditing(false);
       
-      // Notify parent component if callback provided
+      // Notify parent component
       if (onSubmitSuccess) {
         onSubmitSuccess(data.timesheet);
       }
     } catch (err) {
-      console.error('Error creating timesheet:', err);
+      console.error(`Error ${isEditing ? 'updating' : 'creating'} timesheet:`, err);
       setError(err.message || 'An error occurred');
     } finally {
       setLoading(false);
@@ -123,7 +145,7 @@ const TimesheetForm = ({ onSubmitSuccess }) => {
   return (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
       <Typography variant="h6" component="h2" gutterBottom>
-        New Timesheet Entry
+        {isEditing ? 'Edit Timesheet Entry' : 'New Timesheet Entry'}
       </Typography>
       
       {error && (
@@ -214,8 +236,24 @@ const TimesheetForm = ({ onSubmitSuccess }) => {
               disabled={loading}
               sx={{ mt: 1 }}
             >
-              {loading ? <CircularProgress size={24} /> : 'Submit'}
+              {loading ? <CircularProgress size={24} /> : (isEditing ? 'Update' : 'Submit')}
             </Button>
+            {isEditing && (
+              <Button
+                onClick={() => {
+                  setFormData({
+                    date: new Date(),
+                    project: '',
+                    hours: '',
+                    description: ''
+                  });
+                  setIsEditing(false);
+                }}
+                sx={{ mt: 1, ml: 2 }}
+              >
+                Cancel
+              </Button>
+            )}
           </Grid>
         </Grid>
       </Box>
