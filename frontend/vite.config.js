@@ -15,6 +15,10 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_API_URL || 'http://backend:5000',
         changeOrigin: true,
+      },
+      '/timesheet': {
+        target: process.env.VITE_API_URL || 'http://localhost:5001',
+        changeOrigin: true,
       }
     }
   }

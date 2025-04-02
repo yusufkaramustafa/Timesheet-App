@@ -4,6 +4,7 @@ import Layout from './components/layout/Layout';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './components/dashboard/Dashboard';
+import TimesheetPage from './pages/TimesheetPage';
 
 const theme = createTheme();
 
@@ -41,6 +42,18 @@ function App() {
               isAuthenticated ? (
                 <Layout>
                   <Dashboard />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/timesheet"
+            element={
+              isAuthenticated ? (
+                <Layout>
+                  <TimesheetPage />
                 </Layout>
               ) : (
                 <Navigate to="/login" replace />

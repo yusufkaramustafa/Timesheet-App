@@ -7,7 +7,7 @@ bp = Blueprint('employee', __name__, url_prefix='/employee')
 @bp.route('/timesheet', methods=['POST'])
 @jwt_required()
 def add_timesheet():
-    user_id = get_jwt_identity()['id']
+    user_id = get_jwt_identity()
     data = request.json
     new_timesheet = Timesheet(
         user_id=user_id,
@@ -23,6 +23,6 @@ def add_timesheet():
 @bp.route('/timesheet', methods=['GET'])
 @jwt_required()
 def get_timesheets():
-    user_id = get_jwt_identity()['id']
+    user_id = get_jwt_identity()
     timesheets = Timesheet.query.filter_by(user_id=user_id).all()
     return jsonify([t.to_dict() for t in timesheets])

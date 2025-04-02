@@ -18,7 +18,7 @@ def get_project_options():
 def create_timesheet():
     try:
         data = request.json
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
         
         # Validate project
         if data['project'] not in PROJECT_OPTIONS:
@@ -58,7 +58,7 @@ def create_timesheet():
 @jwt_required()
 def get_timesheets():
     try:
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
         timesheets = Timesheet.query.filter_by(user_id=user_id).order_by(Timesheet.date.desc()).all()
         
         return jsonify({
@@ -79,7 +79,7 @@ def get_timesheets():
 @jwt_required()
 def update_timesheet(timesheet_id):
     try:
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
         timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=user_id).first()
         
         if not timesheet:
@@ -123,7 +123,7 @@ def update_timesheet(timesheet_id):
 @jwt_required()
 def delete_timesheet(timesheet_id):
     try:
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
         timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=user_id).first()
         
         if not timesheet:
