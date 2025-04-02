@@ -13,7 +13,7 @@ def create_app():
     # Enable CORS for all routes with more permissive settings for development
     CORS(app, 
          resources={r"/*": {
-             "origins": ["http://127.0.0.1:5173"],
+             "origins": ["http://127.0.0.1:5173", "http://localhost:5173"],
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization", "Accept"]
          }})

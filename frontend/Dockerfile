@@ -3,11 +3,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY frontend/package*.json ./
+COPY frontend/ ./
+
+# Install dependencies
 RUN npm install
 
-COPY frontend/ .
+# Install esbuild
+RUN npm install esbuild@0.25.2
 
+
+# Expose port
 EXPOSE 5173
 
-CMD ["npm", "run", "dev"]
+# Run the dev script - log what's available first
+CMD ["sh", "-c", "npm run && npm run dev"]
