@@ -5,15 +5,11 @@ import {
   List, 
   ListItem, 
   ListItemText, 
-  ListItemSecondaryAction,
-  IconButton,
   Divider,
-  Button,
   Box,
   Alert,
   CircularProgress
 } from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const UsersList = () => {
   const [users, setUsers] = useState([]);
@@ -86,11 +82,6 @@ const UsersList = () => {
                   primary={user.username} 
                   secondary={`Role: ${user.role}`} 
                 />
-                <ListItemSecondaryAction>
-                  <IconButton edge="end" aria-label="view">
-                    <VisibilityIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
               </ListItem>
               <Divider component="li" />
             </React.Fragment>
