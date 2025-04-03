@@ -17,6 +17,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LogoutIcon from '@mui/icons-material/Logout';
+import PeopleIcon from '@mui/icons-material/People';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -26,6 +27,9 @@ const Layout = ({ children }) => {
     localStorage.removeItem('user');
     window.location.href = '/login';
   };
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -64,6 +68,15 @@ const Layout = ({ children }) => {
               </ListItemIcon>
               <ListItemText primary="Timesheets" />
             </ListItem>
+
+            {isAdmin && (
+              <ListItem button component={Link} to="/admin">
+                <ListItemIcon>
+                  <PeopleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Admin" />
+              </ListItem>
+            )}
           </List>
           <Divider />
           <List>

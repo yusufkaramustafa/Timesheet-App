@@ -24,4 +24,12 @@ def get_all_timesheets():
         return jsonify({"error": "Unauthorized"}), 403
 
     timesheets = Timesheet.query.all()
-    return jsonify([t.to_dict() for t in timesheets])
+    return jsonify([{
+        'id': t.id,
+        'user_id': t.user_id,
+        'date': t.date.strftime('%Y-%m-%d'),
+        'project': t.project,
+        'hours': t.hours,
+        'description': t.description,
+        'created_at': t.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    } for t in timesheets])

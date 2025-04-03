@@ -9,14 +9,18 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/auth': {
-        target: process.env.VITE_API_URL || 'http://backend:5000',
+        target: process.env.VITE_API_URL || 'http://localhost:5001',
         changeOrigin: true,
       },
       '/api': {
-        target: process.env.VITE_API_URL || 'http://backend:5000',
+        target: process.env.VITE_API_URL || 'http://localhost:5001',
         changeOrigin: true,
       },
       '/timesheet': {
+        target: process.env.VITE_API_URL || 'http://localhost:5001',
+        changeOrigin: true,
+      },
+      '/admin': {
         target: process.env.VITE_API_URL || 'http://localhost:5001',
         changeOrigin: true,
       }
