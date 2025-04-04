@@ -94,6 +94,13 @@ const TimesheetForm = ({ onSubmitSuccess, initialData }) => {
     setError('');
     setSuccess('');
     
+    const hours = parseFloat(formData.hours);
+    if (isNaN(hours) || hours < 1 || hours > 8) {
+      setError('Hours must be between 1 and 8');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const token = localStorage.getItem('token');
       const formattedDate = format(formData.date, 'yyyy-MM-dd');
@@ -209,9 +216,14 @@ const TimesheetForm = ({ onSubmitSuccess, initialData }) => {
               label="Hours"
               name="hours"
               type="number"
-              inputProps={{ step: "0.5", min: "0", max: "24" }}
+              inputProps={{ 
+                step: "0.5", 
+                min: "1",
+                max: "8"
+              }}
               value={formData.hours}
               onChange={handleChange}
+              helperText="Hours must be between 1 and 8"
             />
           </Grid>
           
