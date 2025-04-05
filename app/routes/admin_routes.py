@@ -59,16 +59,24 @@ def export_timesheet():
             with zipfile.ZipFile(memory_file, 'w') as zf:
                 users = User.query.all()
                 for user in users:
-                    excel_data = create_user_timesheet_excel(user.id, date_from, date_to)
-                    zf.writestr(f'timesheet_{user.username}.xlsx', excel_data.getvalue())
+                    try:
+                        excel_data = create_user_timesheet_excel(user.id, date_from, date_to)
+                        zf.writestr(f'timesheet_{user.username}.xlsx', excel_data.getvalue())
+                    except Exception as e:
+                        # Log the error but continue with other users
+                        print(f"Error creating Excel for user {user.username}: {str(e)}")
+                        continue
             
             memory_file.seek(0)
-            return send_file(
-                memory_file,
-                mimetype='application/zip',
-                as_attachment=True,
-                download_name=f'all_timesheets_{datetime.now().strftime("%Y%m%d")}.zip'
-            )
+            if memory_file.getvalue():  # Check if any data was written
+                return send_file(
+                    memory_file,
+                    mimetype='application/zip',
+                    as_attachment=True,
+                    download_name=f'all_timesheets_{datetime.now().strftime("%Y%m%d")}.zip'
+                )
+            else:
+                return jsonify({"error": "No data found for the selected date range"}), 404
         else:
             # Export single user's timesheet
             if not selected_user_id:
@@ -84,33 +92,52 @@ def export_timesheet():
                 download_name=f'timesheet_{user.username}_{datetime.now().strftime("%Y%m%d")}.xlsx'
             )
 
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Export error: {str(e)}")  # Add logging for debugging
+        return jsonify({"error": "An error occurred while exporting timesheets"}), 500
 
 def create_user_timesheet_excel(user_id, date_from=None, date_to=None):
     # Query timesheets
     query = Timesheet.query.filter_by(user_id=user_id)
+    
+    # Convert date strings to date objects if they exist
     if date_from:
-        query = query.filter(Timesheet.date >= date_from)
+        try:
+            date_from = datetime.strptime(date_from, '%Y-%m-%d').date()
+            query = query.filter(Timesheet.date >= date_from)
+        except ValueError as e:
+            raise ValueError(f"Invalid date_from format: {date_from}. Use YYYY-MM-DD format.")
+    
     if date_to:
-        query = query.filter(Timesheet.date <= date_to)
+        try:
+            date_to = datetime.strptime(date_to, '%Y-%m-%d').date()
+            query = query.filter(Timesheet.date <= date_to)
+        except ValueError as e:
+            raise ValueError(f"Invalid date_to format: {date_to}. Use YYYY-MM-DD format.")
+    
     timesheets = query.order_by(Timesheet.date).all()
     
-    # Create DataFrame
-    data = [{
-        'Date': ts.date.strftime('%Y-%m-%d'),
-        'Project': ts.project,
-        'Hours': ts.hours,
-        'Description': ts.description,
-        'Created At': ts.created_at.strftime('%Y-%m-%d %H:%M:%S')
-    } for ts in timesheets]
-    
-    df = pd.DataFrame(data)
+    # Handle empty timesheet case
+    if not timesheets:
+        # Create empty DataFrame with correct columns
+        df = pd.DataFrame(columns=['Date', 'Project', 'Hours', 'Description', 'Created At'])
+    else:
+        # Create DataFrame with data
+        data = [{
+            'Date': ts.date.strftime('%Y-%m-%d'),
+            'Project': ts.project,
+            'Hours': ts.hours,
+            'Description': ts.description,
+            'Created At': ts.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        } for ts in timesheets]
+        df = pd.DataFrame(data)
     
     # Add summary at the bottom
     summary = pd.DataFrame([{
         'Project': 'Total Hours',
-        'Hours': df['Hours'].sum()
+        'Hours': df['Hours'].sum() if not df.empty else 0
     }])
     
     # Create Excel file in memory
