@@ -4,7 +4,8 @@ from app.models import Timesheet, User, db
 import pandas as pd
 from io import BytesIO
 import zipfile
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -162,3 +163,75 @@ def create_user_timesheet_excel(user_id, date_from=None, date_to=None):
     
     excel_buffer.seek(0)
     return excel_buffer
+
+@bp.route('/statistics', methods=['GET'])
+@jwt_required()
+def get_statistics():
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or user.role != 'admin':
+            return jsonify({"error": "Unauthorized"}), 403
+
+        time_range = request.args.get('range', 'week')
+        
+        # Calculate date range
+        today = datetime.now().date()
+        if time_range == 'week':
+            start_date = today - timedelta(days=today.weekday())
+        elif time_range == 'month':
+            start_date = today.replace(day=1)
+        else:  # year
+            start_date = today.replace(month=1, day=1)
+
+        # Project distribution
+        project_stats = db.session.query(
+            Timesheet.project,
+            func.sum(Timesheet.hours).label('hours')
+        ).filter(
+            Timesheet.date >= start_date
+        ).group_by(
+            Timesheet.project
+        ).all()
+
+        # Employee hours
+        employee_stats = db.session.query(
+            User.username,
+            func.sum(Timesheet.hours).label('hours')
+        ).join(
+            Timesheet, User.id == Timesheet.user_id
+        ).filter(
+            Timesheet.date >= start_date
+        ).group_by(
+            User.username
+        ).all()
+
+        # Daily trends
+        daily_stats = db.session.query(
+            Timesheet.date,
+            func.sum(Timesheet.hours).label('hours')
+        ).filter(
+            Timesheet.date >= start_date
+        ).group_by(
+            Timesheet.date
+        ).order_by(
+            Timesheet.date
+        ).all()
+
+        return jsonify({
+            'projectDistribution': [
+                {'project': project, 'hours': float(hours)}
+                for project, hours in project_stats
+            ],
+            'employeeHours': [
+                {'name': username, 'hours': float(hours)}
+                for username, hours in employee_stats
+            ],
+            'dailyTrends': [
+                {'date': date.strftime('%Y-%m-%d'), 'hours': float(hours)}
+                for date, hours in daily_stats
+            ]
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
