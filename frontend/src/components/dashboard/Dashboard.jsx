@@ -59,40 +59,6 @@ const Dashboard = () => {
             </Grid>
           </Paper>
         </Grid>
-
-        {/* Recent Activity */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, px: 1 }}>
-              Recent Activity
-            </Typography>
-            <Paper elevation={2} sx={{ p: 2 }}>
-              <Typography variant="subtitle1">No recent activity</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Your recent timesheet entries will appear here
-              </Typography>
-            </Paper>
-          </Paper>
-        </Grid>
-
-        {/* Statistics */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, px: 1 }}>
-              Statistics
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <Paper elevation={2} sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h6">0</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Hours This Week
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
       </Grid>
     </Box>
   );
