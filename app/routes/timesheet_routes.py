@@ -18,7 +18,12 @@ def get_project_options():
 def create_timesheet():
     try:
         data = request.json
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
+        
+        # Validate hours
+        hours = float(data['hours'])
+        if hours < 1 or hours > 8:
+            return jsonify({"error": "Hours must be between 1 and 8"}), 400
         
         # Validate project
         if data['project'] not in PROJECT_OPTIONS:
@@ -31,7 +36,7 @@ def create_timesheet():
             user_id=user_id,
             date=date,
             project=data['project'],
-            hours=float(data['hours']),
+            hours=hours,
             description=data['description']
         )
         
@@ -50,6 +55,9 @@ def create_timesheet():
             }
         }), 201
         
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -58,7 +66,7 @@ def create_timesheet():
 @jwt_required()
 def get_timesheets():
     try:
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
         timesheets = Timesheet.query.filter_by(user_id=user_id).order_by(Timesheet.date.desc()).all()
         
         return jsonify({
@@ -79,7 +87,7 @@ def get_timesheets():
 @jwt_required()
 def update_timesheet(timesheet_id):
     try:
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
         timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=user_id).first()
         
         if not timesheet:
@@ -87,6 +95,13 @@ def update_timesheet(timesheet_id):
             
         data = request.json
         
+        # Validate hours if provided
+        if 'hours' in data:
+            hours = float(data['hours'])
+            if hours < 1 or hours > 8:
+                return jsonify({"error": "Hours must be between 1 and 8"}), 400
+            timesheet.hours = hours
+            
         # Validate project if provided
         if 'project' in data and data['project'] not in PROJECT_OPTIONS:
             return jsonify({"error": "Invalid project option"}), 400
@@ -96,8 +111,6 @@ def update_timesheet(timesheet_id):
             timesheet.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
         if 'project' in data:
             timesheet.project = data['project']
-        if 'hours' in data:
-            timesheet.hours = float(data['hours'])
         if 'description' in data:
             timesheet.description = data['description']
             
@@ -115,6 +128,9 @@ def update_timesheet(timesheet_id):
             }
         })
         
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -123,7 +139,7 @@ def update_timesheet(timesheet_id):
 @jwt_required()
 def delete_timesheet(timesheet_id):
     try:
-        user_id = get_jwt_identity()['id']
+        user_id = get_jwt_identity()
         timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=user_id).first()
         
         if not timesheet:
